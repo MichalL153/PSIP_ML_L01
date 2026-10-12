@@ -2,3 +2,4 @@
 - Michał- biłgorajski
 - Jakub - chełmski
 - Jan - miński
+- Tymoteusz - toruński
