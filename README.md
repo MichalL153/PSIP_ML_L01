@@ -8,3 +8,4 @@
 - Marcin - miński
 - Bartek - radomszczański
 - Kacper - legnicki
+- Daniel - sochaczewski
