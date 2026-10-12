@@ -7,3 +7,4 @@
 - Stanisław - turecki
 - Marcin - miński
 - Bartek - radomszczański
+- Kacper - legnicki
