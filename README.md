@@ -1,2 +1,13 @@
 # PSIP_ML_L01
 - Michał- biłgorajski
+- Jakub - chełmski
+- Jan - miński
+- Tymoteusz - toruński
+- Dominik - koniński
+- Stanisław - turecki
+- Marcin - miński
+- Bartek - radomszczański
+- Kacper - legnicki
+- Daniel - sochaczewski
+- Julia - hajnowski
+- Dawid - bocheński
