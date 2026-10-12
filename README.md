@@ -4,3 +4,4 @@
 - Jan - miński
 - Tymoteusz - toruński
 - Dominik - koniński
+- Stanisław - turecki
