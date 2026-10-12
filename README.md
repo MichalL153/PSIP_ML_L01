@@ -6,3 +6,4 @@
 - Dominik - koniński
 - Stanisław - turecki
 - Marcin - miński
+- Bartek - radomszczański
