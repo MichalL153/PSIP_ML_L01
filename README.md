@@ -3,3 +3,4 @@
 - Jakub - chełmski
 - Jan - miński
 - Tymoteusz - toruński
+- Dominik - koniński
