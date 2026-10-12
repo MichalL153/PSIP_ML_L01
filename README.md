@@ -5,3 +5,4 @@
 - Tymoteusz - toruński
 - Dominik - koniński
 - Stanisław - turecki
+- Marcin - miński
