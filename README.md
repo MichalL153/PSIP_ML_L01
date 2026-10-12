@@ -10,3 +10,4 @@
 - Kacper - legnicki
 - Daniel - sochaczewski
 - Julia - hajnowski
+- Dawid - bocheński
