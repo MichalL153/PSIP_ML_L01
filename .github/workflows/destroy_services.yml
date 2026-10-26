@@ -1,0 +1,36 @@
+name: Destroy Remote Database
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Srodowisko do usuniecia wraz z danymi
+        required: true
+        type: choice
+        options: [env-test, env-qa, main]
+      confirmation:
+        description: Wpisz remote-db-env-test lub remote-db-env-qa lub remote-db-main
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: remote-db-${{ inputs.environment }}
+  cancel-in-progress: false
+jobs:
+  destroy-db:
+    if: github.repository == 'MichalL153/PSIP_ML_L01' && github.actor == github.repository_owner
+    runs-on: [self-hosted, psip-lab]
+    environment: ${{ inputs.environment }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Destroy selected environment
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          TARGET_ENV: ${{ inputs.environment }}
+          CONFIRM_DESTROY: ${{ inputs.confirmation }}
+        run: bash scripts/services.sh destroy "$TARGET_ENV"

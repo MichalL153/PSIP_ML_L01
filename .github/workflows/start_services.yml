@@ -2,34 +2,39 @@ name: Start Remote Database
 
 on:
   push:
-    branches:
-      - env-test
-      - env-qa
-      - main
+    branches: [env-test, env-qa, main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Srodowisko do uruchomienia
+        required: true
+        type: choice
+        options: [env-test, env-qa, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: remote-db-${{ inputs.environment || github.ref_name }}
+  cancel-in-progress: false
 
 jobs:
   start-db:
-    runs-on: self-hosted
-
+    if: github.repository == 'MichalL153/PSIP_ML_L01' && github.actor == github.repository_owner
+    runs-on: [self-hosted, psip-lab]
+    environment: ${{ inputs.environment || github.ref_name }}
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Set environment variables
-        run: |
-          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
-          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
-          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
-          if [ "${{ github.ref_name }}" = "env-test" ]; then
-            echo "POSTGRES_PORT=5444" >> .env
-          elif [ "${{ github.ref_name }}" = "env-qa" ]; then
-            echo "POSTGRES_PORT=5445" >> .env
-          elif [ "${{ github.ref_name }}" = "main" ]; then
-            echo "POSTGRES_PORT=5446" >> .env
-          fi
-          echo "COMPOSE_PROJECT_NAME=${{ github.ref_name }}" >> .env
-
-
-      - name: Start PostGIS
-        run: |
-          docker compose -f docker-compose.yml -p remote-db-${{ github.ref_name }} up -d --build
+        with:
+          persist-credentials: false
+      - name: Start PostGIS and load H3 grids
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          TARGET_ENV: ${{ inputs.environment || github.ref_name }}
+        run: bash scripts/services.sh start "$TARGET_ENV"
+      - name: Show running services
+        run: docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
