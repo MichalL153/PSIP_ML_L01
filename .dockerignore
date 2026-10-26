@@ -1,0 +1,7 @@
+.git
+.idea
+.env
+.env.*
+work
+data/generated
+**/__pycache__

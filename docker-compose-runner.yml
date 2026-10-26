@@ -1,0 +1,75 @@
+services:
+
+  docker-engine:
+    image: docker:28-dind
+    container_name: psip-docker-engine
+    privileged: true
+    restart: unless-stopped
+    # DNS Docker Desktop; zagniezdzony Docker nie moze uzyc 127.0.0.11 rodzica.
+    command: ["--dns", "${DOCKER_DNS:-192.168.65.7}"]
+    ports:
+      - "127.0.0.1:5544:5444"
+      - "127.0.0.1:5545:5445"
+      - "127.0.0.1:5546:5446"
+
+    environment:
+      DOCKER_TLS_CERTDIR: /certs
+      DOCKER_TLS_SAN: DNS:docker-engine
+
+    networks:
+      - runner-network
+
+    volumes:
+      - docker-engine-data:/var/lib/docker
+      - docker-certs-ca:/certs/ca
+      - docker-certs-client:/certs/client
+      - runner-work:/workspace
+    healthcheck:
+      test: ["CMD", "docker", "info"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  github-runner:
+    image: ghcr.io/myoung34/docker-github-actions-runner:latest
+    container_name: psip-github-runner
+    restart: unless-stopped
+
+    depends_on:
+      docker-engine:
+        condition: service_healthy
+
+    environment:
+      REPO_URL: https://github.com/MichalL153/PSIP_ML_L01
+      RUNNER_SCOPE: repo
+      RUNNER_NAME: psip-lab-runner
+      RUNNER_TOKEN: ${RUNNER_TOKEN:?Brak tokena runnera}
+      LABELS: psip-lab
+      RUNNER_WORKDIR: /workspace
+      CONFIGURED_ACTIONS_RUNNER_FILES_DIR: /runner-state
+      DISABLE_AUTOMATIC_DEREGISTRATION: "true"
+
+      DOCKER_HOST: tcp://docker-engine:2376
+      DOCKER_TLS_VERIFY: "1"
+      DOCKER_CERT_PATH: /certs/client
+
+      UNSET_CONFIG_VARS: "true"
+
+    networks:
+      - runner-network
+
+    volumes:
+      - docker-certs-client:/certs/client:ro
+      - runner-work:/workspace
+      - runner-state:/runner-state
+
+networks:
+  runner-network:
+    driver: bridge
+
+volumes:
+  docker-engine-data:
+  docker-certs-ca:
+  docker-certs-client:
+  runner-work:
+  runner-state:

@@ -1,0 +1,40 @@
+name: Start Remote Database
+
+on:
+  push:
+    branches: [env-test, env-qa, main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Srodowisko do uruchomienia
+        required: true
+        type: choice
+        options: [env-test, env-qa, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: remote-db-${{ inputs.environment || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  start-db:
+    if: github.repository == 'MichalL153/PSIP_ML_L01' && github.actor == github.repository_owner
+    runs-on: [self-hosted, psip-lab]
+    environment: ${{ inputs.environment || github.ref_name }}
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Start PostGIS and load H3 grids
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          TARGET_ENV: ${{ inputs.environment || github.ref_name }}
+        run: bash scripts/services.sh start "$TARGET_ENV"
+      - name: Show running services
+        run: docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'

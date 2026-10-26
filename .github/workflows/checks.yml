@@ -1,0 +1,24 @@
+name: Check laboratory code
+on:
+  push:
+    branches: [env-test, env-qa, main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check workflow definitions
+        run: docker run --rm -v "$PWD:/repo:ro" -w /repo rhysd/actionlint:1.7.12
+      - name: Build Python with GDAL and H3
+        run: docker build -f docker/python/Dockerfile -t psip-lab-python .
+      - name: Test H3 geometry and argument validation
+        run: >-
+          docker run --rm -v "$PWD/app:/app:ro" -v "$PWD/data:/data:ro"
+          -v "$PWD/tests:/tests:ro" psip-lab-python
+          python3 -m unittest discover -s /tests -v
